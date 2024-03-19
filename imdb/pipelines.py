@@ -9,6 +9,8 @@ from itemadapter import ItemAdapter
 import re
 import sqlite3
 import psycopg2
+import logging
+
 
 class ImdbSqlitePipeline:
     def open_spider(self, spider):
@@ -110,17 +112,25 @@ class ImdbSqlitePipeline:
 
 
 
+logger = logging.getLogger(__name__)
 
-
-#test avec une bdd postgres
+#test avec une image postgres
 class ImdbPostgresPipeline:
     def open_spider(self, spider):
+        #Pour lancer un container docker avec l'image postgres officielle:
+        #-e defini une variable d'env; 
+        #-d veut dire en mode détaché
+        #commande : docker run --name some-postgres -e POSTGRES_PASSWORD=deborahdeborah -d -p 5432:5432
+        #Pour accéder à votre base de données PostgreSQL via DBeaver, 
+        #le conteneur qui exécute PostgreSQL doit être en cours d'exécution.
 
         # connection details
         hostname = 'localhost'
-        username = 'postgres'
+        username = 'postgres' # le nom d'utilisateur créé par défaut par l'image PostgreSQL.
         password = 'deborahdeborah'
-        database = 'postgres'
+        database = 'imdb_postgres' #'postgres' c la bdd créé par defaut par l'image, sinon attash shell : 
+        # psql -U postgres pour se co a postgres et CREATE DATABASE imdb_postgres;
+
 
         # connection à la bdd
         self.connection = psycopg2.connect(host=hostname, user=username, password=password, dbname=database)
@@ -146,26 +156,33 @@ class ImdbPostgresPipeline:
         
     def process_item(self, item, spider):
 
+        #recupération de l'objet adapter pour manipuler les données
         adapter = ItemAdapter(item)
+        #print('objet :', adapter)
+        
 
         #insertion bdd postgres
-        self.cur.execute(f""" insert into {spider.name} (titre, score, genre, year, duree, description, acteurs, 
-                         langue_origine, pays, public) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", (
-                             adapter.get('titre_original'),
-                             adapter.get('score'),
-                             adapter.get('genre'),   
-                             adapter.get('year'),
-                             adapter.get('duree'),
-                             adapter.get('description'),
-                             adapter.get('acteurs'),
-                             adapter.get('langue_origine'),
-                             adapter.get('pays'),
-                             adapter.get('public')
-                         ))
-        #execution de l'insertion des données dans la bdd
-        self.connection.commit()
-        print('execution postgres terminé')
-        return item 
+        try:
+            self.cur.execute(f""" insert into {spider.name} (titre, score, genre, year, duree, description, acteurs, 
+                            langue_origine, pays, public) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", (
+                                adapter.get('titre_original'),
+                                adapter.get('score'),
+                                adapter.get('genre'),   
+                                adapter.get('year'),
+                                adapter.get('duree'),
+                                adapter.get('description'),
+                                adapter.get('acteurs'),
+                                adapter.get('langue_origine'),
+                                adapter.get('pays'),
+                                adapter.get('public')
+                            ))
+            #execution de l'insertion des données dans la bdd
+            self.connection.commit()
+            print('execution postgres terminé')
+            return item 
+        except Exception as e:
+            self.connection.rollback() 
+            logger.error(f"Erreur lors de l'insertion: {e}")
 
     def close_spider(self, spider):
         #fermer le curseur et la connection à la bdd

@@ -181,7 +181,7 @@ class ImdbPostgresPipeline:
             print('execution postgres terminé')
             return item 
         except Exception as e:
-            self.connection.rollback() 
+            self.connection.rollback() #continue de crawl meme si y'a des problemes en capturant l'erreur
             logger.error(f"Erreur lors de l'insertion: {e}")
 
     def close_spider(self, spider):

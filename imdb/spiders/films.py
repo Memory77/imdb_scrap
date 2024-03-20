@@ -11,7 +11,7 @@ class FilmsSpider(scrapy.Spider):
     #pour obtenir plus de détails.
     def parse(self, response):
         films = response.css('li.ipc-metadata-list-summary-item')
-        for film in films: #on parcours chaque pokemon un pokemon = li.product
+        for film in films: #on parcours chaque film 
             titre = film.css('h3.ipc-title__text::text').get()
             film_url = film.css('a::attr(href)').get() #on prend le href a chaque film
             # yield {
@@ -28,7 +28,7 @@ class FilmsSpider(scrapy.Spider):
         #     yield response.follow(url=next_page, callback=self.parse)
 
 
-    #fonction est appelée pour parcourir chaque page de films. 
+    #fonction est appelée pour parcourir chaque page de film. 
     def parse_product(self, response):
         titre = response.meta.get('titre')
         

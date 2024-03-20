@@ -10,7 +10,7 @@ class SeriesSpider(scrapy.Spider):
     #pour obtenir plus de détails.
     def parse(self, response):
         series = response.css('li.ipc-metadata-list-summary-item')
-        for serie in series: #on parcours chaque pokemon un pokemon = li.product
+        for serie in series: #on parcours chaque serie
             titre = serie.css('h3.ipc-title__text::text').get()
             serie_url = serie.css('a::attr(href)').get() #on prend le href a chaque film
             # yield {
@@ -27,7 +27,7 @@ class SeriesSpider(scrapy.Spider):
         #     yield response.follow(url=next_page, callback=self.parse)
 
 
-    #fonction est appelée pour parcourir chaque page de films. 
+    #fonction est appelée pour parcourir chaque page de serie. 
     def parse_product(self, response):
         titre = response.meta.get('titre')
         

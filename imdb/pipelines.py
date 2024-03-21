@@ -119,7 +119,6 @@ logger = logging.getLogger(__name__)
 
 #test avec une image postgres
 class ImdbPostgresPipeline:
-    pass
     def open_spider(self, spider):
         #Pour lancer un container docker avec l'image postgres officielle:
         #-e defini une variable d'env; 

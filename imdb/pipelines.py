@@ -19,9 +19,12 @@ class ImdbSqlitePipeline:
         self.connection = sqlite3.connect('imdb.db') 
         self.c = self.connection.cursor()
 
+        # suppression de la table si elle existe déjà
+        self.c.execute(f'DROP TABLE IF EXISTS {spider.name}')
+
         # creation la table si elle n'existe pas déjà
         self.c.execute(f'''
-            CREATE TABLE IF NOT EXISTS {spider.name} (
+            CREATE TABLE {spider.name} (
                 titre TEXT,
                 score REAL,
                 genre TEXT,
@@ -116,6 +119,7 @@ logger = logging.getLogger(__name__)
 
 #test avec une image postgres
 class ImdbPostgresPipeline:
+    pass
     def open_spider(self, spider):
         #Pour lancer un container docker avec l'image postgres officielle:
         #-e defini une variable d'env; 
@@ -128,7 +132,8 @@ class ImdbPostgresPipeline:
         hostname = 'localhost'
         username = 'postgres' # le nom d'utilisateur créé par défaut par l'image PostgreSQL.
         password = 'deborahdeborah'
-        database = 'imdb_postgres' #'postgres' c la bdd créé par defaut par l'image, sinon attash shell : 
+        database = 'imdb_postgres' #'postgres' c la bdd créé par defaut par l'image, sinon pour mettre un autre nom :
+        # attash shell sur le container qui tourne: 
         # psql -U postgres pour se co a postgres et CREATE DATABASE imdb_postgres;
 
 
@@ -138,9 +143,12 @@ class ImdbPostgresPipeline:
         #creation du curseur, qui permettra d'executer
         self.cur = self.connection.cursor()
 
-        #creation de la table si elle n'existe pas déjà
+        # suppression de la table si elle existe déjà
+        self.cur.execute(f'DROP TABLE IF EXISTS {spider.name}')
+
+        #creation de la table
         self.cur.execute(f"""
-                         CREATE TABLE IF NOT EXISTS {spider.name}(
+                         CREATE TABLE {spider.name}(
                          titre text,
                          score real,
                          genre text[],
